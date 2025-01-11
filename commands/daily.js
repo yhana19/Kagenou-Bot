@@ -3,11 +3,11 @@ module.exports = {
     description: 'Claim your daily reward.',
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData, getLang) => {
         const { senderID, threadID } = event;
-        const dailyReward = 100; //amount of daily reward money
+        const dailyReward = 100; // Daily reward amount
 
         try {
             const userData = await usersData.get(senderID) || { money: 0, data: {} };
-            const lastClaimed = userData.data.lastClaimed || 0; //last claim time
+            const lastClaimed = userData.data.lastClaimed || 0;
             const now = Date.now();
             const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
 
@@ -15,14 +15,14 @@ module.exports = {
                 const newBalance = userData.money + dailyReward;
                 await usersData.set(senderID, {
                     money: newBalance,
-                    data: { ...userData.data, lastClaimed: now }, //update claim time
+                    data: { ...userData.data, lastClaimed: now },
                 });
                 sendMessage(api, {
                     threadID,
                     message: `You claimed your daily reward of $${dailyReward}! Your new balance is $${newBalance}`,
                 });
             } else {
-                const timeLeft = Math.floor((lastClaimed + oneDay - now) / 1000); //time left until next claim
+                const timeLeft = Math.floor((lastClaimed + oneDay - now) / 1000);
                 const seconds = timeLeft % 60;
                 const minutes = Math.floor(timeLeft / 60) % 60;
                 const hours = Math.floor(timeLeft / (60 * 60));
@@ -37,3 +37,4 @@ module.exports = {
         }
     },
 };
+                    
