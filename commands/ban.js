@@ -1,9 +1,8 @@
 module.exports = {
   name: 'ban',
   category: 'Moderation',
-  execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, globalData) => {
+  execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
     const { threadID, senderID } = event;
-    const _m = "banlist";
 
     if (!admins.includes(senderID)) {
       return sendMessage(api, { threadID, message: "You don't have permission to use this command." });
@@ -21,13 +20,14 @@ module.exports = {
       }
       const targetName = userInfo[targetId].name;
 
-      let banlist = await globalData.get(_m) || { data: [] };
-      if (banlist.data.includes(targetId)) {
+      // Check if already banned (using global.data)
+      if (global.data.banlist && global.data.banlist.includes(targetId)) {
         return sendMessage(api, { threadID, message: `${targetName} is already banned.` });
       }
 
-      banlist.data.push({ id: targetId, name: targetName }); // Store ID and name
-      await globalData.set(_m, banlist);
+      // Ban the user (using global.data)
+      global.data.banlist = global.data.banlist || []; // Initialize if needed
+      global.data.banlist.push({ id: targetId, name: targetName });
       return sendMessage(api, { threadID, message: `Successfully banned ${targetName}` });
 
     } catch (error) {
@@ -36,4 +36,4 @@ module.exports = {
     }
   }
 };
-        
+                                                              
