@@ -1,3 +1,5 @@
+const { DateTime } = require('luxon'); //Requires Luxon library for better date/time handling
+
 module.exports = {
     name: 'daily',
     description: 'Claim your daily reward.',
@@ -6,41 +8,42 @@ module.exports = {
         const dailyReward = 1000;
 
         try {
-            const userData = await usersData.get(senderID);
+            //1. Retrieve user data, create if doesn't exist
+            let userData = await usersData.get(senderID);
             if (!userData) {
-                // Handle the case where the user's data is not found
-                console.error(`User data not found for ${senderID}`);
-                return sendMessage(api, { threadID, message: "Your user data was not found. Please contact an admin." });
+                userData = { money: 0, data: { lastClaimed: 0 } };
+                await usersData.set(senderID, userData);
+                console.log(`Created new user data for ${senderID}`);
             }
 
-            const lastClaimed = userData.data?.lastClaimed || 0; // Use optional chaining
-            const now = Date.now();
-            const oneDay = 24 * 60 * 60 * 1000;
+            //2. Use Luxon for precise time comparison
+            const lastClaimed = DateTime.fromMillis(userData.data.lastClaimed);
+            const now = DateTime.now();
+            const diff = now.diff(lastClaimed, 'hours').hours;
 
-            if (now - lastClaimed >= oneDay) {
+            //3. Check if 24 hours have passed
+            if (diff >= 24) {
                 const newBalance = userData.money + dailyReward;
-                await usersData.set(senderID, { ...userData, money: newBalance, data: { ...userData.data, lastClaimed: now } });
+                userData.money = newBalance;
+                userData.data.lastClaimed = now.toMillis();
+                await usersData.set(senderID, userData);
                 sendMessage(api, {
                     threadID,
                     message: `You claimed your daily reward of $${dailyReward}! Your new balance is $${newBalance}`,
                 });
             } else {
-                const timeLeft = Math.floor((lastClaimed + oneDay - now) / 1000);
-                const seconds = timeLeft % 60;
-                const minutes = Math.floor(timeLeft / 60) % 60;
-                const hours = Math.floor(timeLeft / (60 * 60));
+                const timeUntilNextClaim = DateTime.fromMillis(lastClaimed.plus({ hours: 24 }).toMillis()).diffNow('hours').negate().hours;
                 sendMessage(api, {
                     threadID,
-                    message: `You've already claimed your daily reward. Come back in ${hours} hours, ${minutes} minutes, and ${seconds} seconds!`,
+                    message: `You've already claimed your daily reward. Come back in ${Math.ceil(timeUntilNextClaim)} hours!`,
                 });
             }
         } catch (error) {
-            console.error("Error claiming daily reward:", error); // Log the error for debugging
+            console.error("Error claiming daily reward:", error);
             sendMessage(api, {
                 threadID,
-                message: `An error occurred while claiming your daily reward.  Please contact an admin and provide this error code: ${error.message}`, // More informative error message
-            });            
+                message: `An error occurred while claiming your daily reward. Please contact support and provide this error code: ${error.message}`,
+            });
         }
     },
 };
-                    
