@@ -1,46 +1,33 @@
 const fs = require('node:fs/promises');
+const path = require('path');
 
 module.exports = {
-  name: 'ban',
-  category: 'Moderation',
-  execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
-    const { threadID, senderID, body } = event; // Use 'body' to get the full message
+    name: 'ban',
+    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
+        if (!admins.includes(event.senderID)) {
+            return sendMessage(api, { threadID: event.threadID, message: 'You do not have permission to use this command.' });
+        }
 
-    if (!admins.includes(senderID)) {
-      return sendMessage(api, { threadID, message: "You don't have permission to use this command." });
-    }
+        const userID = args[1];
+        if (!userID) {
+            return sendMessage(api, { threadID: event.threadID, message: 'Please specify a user ID to ban.' });
+        }
 
-    // Parse the command:  Split the message at the pipe symbol
-    const parts = body.split('|');
-    if (parts.length !== 2 || parts[0].trim() !== '/ban') {
-      return sendMessage(api, { threadID, message: "Invalid command format. Use `/ban | Facebook ID`" });
-    }
+        try {
+            const banlistPath = path.join(__dirname, 'banlist.json');
+            let banlist = JSON.parse(await fs.readFile(banlistPath, 'utf8')) || [];
 
-    const targetId = parts[1].trim();
-    if (!targetId) {
-      return sendMessage(api, { threadID, message: "Please specify a Facebook ID to ban." });
-    }
+            // Get user info (replace with your actual user info retrieval)
+            const userInfo = await api.getUserInfo(userID);
+            const userName = userInfo[userID].name;
 
-    try {
-      let bannedUsers = JSON.parse(await fs.readFile('./banned.json', 'utf8')) || [];
-      console.log("Current banned users before adding:", bannedUsers); 
-
-      if (bannedUsers.includes(targetId)) {
-        return sendMessage(api, { threadID, message: `${targetId} is already banned.` });
-      }
-
-      bannedUsers.push(targetId);
-      console.log("Banned users after adding:", bannedUsers); 
-
-      await fs.writeFile('./banned.json', JSON.stringify(bannedUsers, null, 2));
-      console.log("File successfully written."); 
-
-      return sendMessage(api, { threadID, message: `Successfully banned ${targetId}` });
-
-    } catch (error) {
-      console.error('Error banning user:', error); 
-      return sendMessage(api, { threadID, message: 'Error banning user. Check the console for details.' });
-    }
-  }
+            banlist.push({ userID, userName });
+            await fs.writeFile(banlistPath, JSON.stringify(banlist, null, 2));
+            sendMessage(api, { threadID: event.threadID, message: `${userName} (ID: ${userID}) has been banned.` });
+        } catch (error) {
+            console.error('Error banning user:', error);
+            sendMessage(api, { threadID: event.threadID, message: 'Error banning user. Please check the console for details.' });
+        }
+    },
 };
-        
+          
