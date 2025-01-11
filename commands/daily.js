@@ -1,22 +1,25 @@
 module.exports = {
     name: 'daily',
     description: 'Claim your daily reward.',
-    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData, getLang) => {
+    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData) => {
         const { senderID, threadID } = event;
-        const dailyReward = 100; // Daily reward amount
+        const dailyReward = 1000;
 
         try {
-            const userData = await usersData.get(senderID) || { money: 0, data: {} };
-            const lastClaimed = userData.data.lastClaimed || 0;
+            const userData = await usersData.get(senderID);
+            if (!userData) {
+                // Handle the case where the user's data is not found
+                console.error(`User data not found for ${senderID}`);
+                return sendMessage(api, { threadID, message: "Your user data was not found. Please contact an admin." });
+            }
+
+            const lastClaimed = userData.data?.lastClaimed || 0; // Use optional chaining
             const now = Date.now();
-            const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+            const oneDay = 24 * 60 * 60 * 1000;
 
             if (now - lastClaimed >= oneDay) {
                 const newBalance = userData.money + dailyReward;
-                await usersData.set(senderID, {
-                    money: newBalance,
-                    data: { ...userData.data, lastClaimed: now },
-                });
+                await usersData.set(senderID, { ...userData, money: newBalance, data: { ...userData.data, lastClaimed: now } });
                 sendMessage(api, {
                     threadID,
                     message: `You claimed your daily reward of $${dailyReward}! Your new balance is $${newBalance}`,
@@ -32,8 +35,11 @@ module.exports = {
                 });
             }
         } catch (error) {
-            console.error("Error claiming daily reward:", error);
-            sendMessage(api, { threadID, message: "An error occurred while claiming your daily reward." });
+            console.error("Error claiming daily reward:", error); // Log the error for debugging
+            sendMessage(api, {
+                threadID,
+                message: `An error occurred while claiming your daily reward.  Please contact an admin and provide this error code: ${error.message}`, // More informative error message
+            });            
         }
     },
 };
