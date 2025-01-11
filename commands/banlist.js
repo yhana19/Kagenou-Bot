@@ -13,8 +13,8 @@ module.exports = {
     }
 
     let message = "Banned Users 🚫\n";
-    for (const bannedUser of global.data.banlist) {
-      message += `- ${bannedUser.name} [${bannedUser.id}]\n`;
+    for (const bannedId of global.data.banlist) {
+      message += `- ${bannedId}\n`;
     }
 
     return sendMessage(api, { threadID, message: message });
