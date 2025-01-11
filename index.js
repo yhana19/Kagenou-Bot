@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('node:fs/promises'); // Use fs.promises for async operations
+const fs = require('node:fs/promises');
 const path = require('path');
-const login = require('ws3-fca'); 
+const login = require('ws3-fca');
 const axios = require('axios');
 
 const app = express();
@@ -13,25 +13,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const commands = new Map();
 const commandsDir = path.join(__dirname, 'commands');
 
-const loadCommands = () => {
-    const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-        try {
-            const command = require(path.join(commandsDir, file));
-            if (command.name) {
-                commands.set(command.name.toLowerCase(), command);
-            } else {
-                console.error(`Command file '${file}' is missing a 'name' property.`);
+const loadCommands = async () => {
+    try {
+        const commandFiles = await fs.readdir(commandsDir);
+        for (const file of commandFiles) {
+            if (file.endsWith('.js')) {
+                try {
+                    const command = require(path.join(commandsDir, file));
+                    if (command.name) {
+                        commands.set(command.name.toLowerCase(), command);
+                    } else {
+                        console.error(`Command file '${file}' is missing a 'name' property.`);
+                    }
+                } catch (error) {
+                    console.error(`Error loading command '${file}':`, error);
+                }
             }
-        } catch (error) {
-            console.error(`Error loading command '${file}':`, error);
         }
+    } catch (error) {
+        console.error('Error loading commands:', error);
     }
 };
-
-loadCommands();
-console.log('Commands loaded:', commands);
-
 
 // Load appState (async)
 let appState = {};
@@ -47,7 +49,7 @@ const loadAppState = async () => {
 };
 
 // Load config (async)
-let config = { admins: [] }; 
+let config = { admins: [] };
 const loadConfig = async () => {
     try {
         const configRaw = await fs.readFile('./config.json', 'utf8');
@@ -60,13 +62,13 @@ const loadConfig = async () => {
 
 
 // Define prefix here
-const prefix = '/'; 
+const prefix = '/';
 
 // Facebook login (async)
 let api = null;
 const loginToFacebook = async () => {
-    await loadAppState(); // Load appState before login
-    await loadConfig(); // Load config before login
+    await loadAppState();
+    await loadConfig();
     try {
         api = await new Promise((resolve, reject) => {
             login({ appState }, (err, apiInstance) => {
@@ -102,7 +104,7 @@ const isBanned = async (userId) => {
         return bannedUsers.includes(userId);
     } catch (error) {
         console.error("Error checking ban status:", error);
-        return false; 
+        return false;
     }
 };
 
@@ -114,7 +116,19 @@ const handleMessage = async (api, event, args, sendMessage) => {
         return sendMessage(api, { threadID, message: "You have been banned from using this bot 🚫" });
     }
 
-    // ... (rest of handleMessage remains the same)
+    // Command handling logic (replace with your actual command handling)
+    const commandName = args[0].toLowerCase().substring(prefix.length);
+    const command = commands.get(commandName);
+    if (command) {
+        try {
+            await command.execute(api, event, args.slice(1));
+        } catch (error) {
+            console.error(`Error executing command '${commandName}':`, error);
+            sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+        }
+    } else {
+        sendMessage(api, { threadID, message: "Invalid command." });
+    }
 };
 
 
@@ -141,7 +155,11 @@ const startListeningForMessages = () => {
     });
 };
 
-startBot();
+(async () => {
+    await loadCommands();
+    console.log('Commands loaded:', commands);
+    startBot();
+})();
 
 
 const PORT = process.env.PORT || 3000;
@@ -149,4 +167,4 @@ app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
 
-                    
+                
