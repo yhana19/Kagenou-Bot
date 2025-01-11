@@ -1,3 +1,5 @@
+const fs = require('node:fs/promises');
+
 module.exports = {
   name: 'banlist',
   category: 'Moderation',
@@ -8,15 +10,20 @@ module.exports = {
       return sendMessage(api, { threadID, message: "You don't have permission to use this command." });
     }
 
-    if (!global.data.banlist || global.data.banlist.length === 0) {
-      return sendMessage(api, { threadID, message: "There are no banned users." });
+    try {
+      const bannedUsers = JSON.parse(await fs.readFile('./banned.json', 'utf8')) || [];
+      let message = "Banned Users 🚫\n";
+      if (bannedUsers.length === 0) {
+        message = "There are no banned users.";
+      } else {
+        for (const userId of bannedUsers) {
+          message += `- ${userId}\n`;
+        }
+      }
+      return sendMessage(api, { threadID, message });
+    } catch (error) {
+      console.error('Error getting ban list:', error);
+      return sendMessage(api, { threadID, message: 'Error getting ban list.' });
     }
-
-    let message = "Banned Users 🚫\n";
-    for (const bannedId of global.data.banlist) {
-      message += `- ${bannedId}\n`;
-    }
-
-    return sendMessage(api, { threadID, message: message });
   }
 };
