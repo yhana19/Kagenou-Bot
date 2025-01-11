@@ -5,7 +5,7 @@ module.exports = {
     description: 'Play a slot machine game.',
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData) => {
         const { senderID, threadID } = event;
-        const amount = parseInt(args[0]);
+        const amount = parseInt(args[1]);
         const lang = 'en'; // Default language.  Improve this to detect user language.
 
         if (isNaN(amount) || amount <= 0) {
