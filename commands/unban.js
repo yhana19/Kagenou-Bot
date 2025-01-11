@@ -14,18 +14,18 @@ module.exports = {
     }
 
     try {
-      // Check if banned (using global.data)
-      if (!global.data.banlist || !global.data.banlist.some(user => user.id === targetId)) {
+      // Check if banned
+      if (!global.data.banlist || !global.data.banlist.includes(targetId)) {
         return sendMessage(api, { threadID, message: `${targetId} is not banned.` });
       }
 
-      // Unban the user (using global.data)
-      global.data.banlist = global.data.banlist.filter(user => user.id !== targetId);
-      return sendMessage(api, { threadID, message: `Successfully unbanned ${targetId}` }); // No name needed here
+      // Unban the user
+      global.data.banlist = global.data.banlist.filter(id => id !== targetId);
+      return sendMessage(api, { threadID, message: `Successfully unbanned ${targetId}` });
 
     } catch (error) {
       console.error(`Error unbanning user ${targetId}:`, error);
-      return sendMessage(api, { threadID, message: `Error unbanning user. Please check the user ID.` });
+      return sendMessage(api, { threadID, message: `Error unbanning user.` });
     }
   }
 };
