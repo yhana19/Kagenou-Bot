@@ -109,7 +109,7 @@ const handleMessage = async (api, event, args, sendMessage) => {
           sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
         }
       } else {
-        sendMessage(api, { threadID, message: `Unknown command: ${commandName}` });
+        sendMessage(api, { threadID, message: `Command Not found: ${commandName}` });
       }
     } else if (isAdmin) {
       // Handle non-command messages from admins (if needed)
