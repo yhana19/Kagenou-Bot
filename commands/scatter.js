@@ -1,18 +1,21 @@
+const langData = require('../lang/lang.json'); // Path to your language file
+
 module.exports = {
-    name: 'scatter',
-    description: 'Play a scatter machine game.',
-    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData, getLang) => {
+    name: 'slot',
+    description: 'Play a slot machine game.',
+    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage, usersData) => {
         const { senderID, threadID } = event;
         const amount = parseInt(args[0]);
+        const lang = 'en'; // Default language.  Improve this to detect user language.
 
         if (isNaN(amount) || amount <= 0) {
-            return sendMessage(api, { threadID, message: getLang("invalid_amount") });
+            return sendMessage(api, { threadID, message: langData[lang].invalid_amount });
         }
 
         const userData = await usersData.get(senderID) || { money: 0, data: {} };
 
         if (amount > userData.money) {
-            return sendMessage(api, { threadID, message: getLang("not_enough_money") });
+            return sendMessage(api, { threadID, message: langData[lang].not_enough_money });
         }
 
         const slots = ["🔴", "🟡", "🔵", "🟢", "⚪", "🟣"];
@@ -27,7 +30,7 @@ module.exports = {
             data: userData.data,
         });
 
-        const messageText = getSpinResultMessage(slot1, slot2, slot3, winnings, getLang);
+        const messageText = getSpinResultMessage(slot1, slot2, slot3, winnings, langData[lang]);
 
         sendMessage(api, { threadID, message: messageText });
     },
@@ -43,14 +46,20 @@ function calculateWinnings(slot1, slot2, slot3, betAmount) {
     }
 }
 
-function getSpinResultMessage(slot1, slot2, slot3, winnings, getLang) {
+function getSpinResultMessage(slot1, slot2, slot3, winnings, langData) {
     if (winnings > 0) {
         if (slot1 === slot2 && slot2 === slot3) {
-            return getLang("jackpot_message", winnings, slot1) + ` [${slot1} | ${slot2} | ${slot3}]`;
+            return sprintf(langData.jackpot_message, winnings, slot1) + ` [${slot1} | ${slot2} | ${slot3}]`;
         } else {
-            return getLang("two_match", winnings) + ` [${slot1} | ${slot2} | ${slot3}]`;
+            return sprintf(langData.two_match, winnings) + ` [${slot1} | ${slot2} | ${slot3}]`;
         }
     } else {
-        return getLang("lose_message", -winnings) + ` [${slot1} | ${slot2} | ${slot3}]`;
+        return sprintf(langData.lose_message, -winnings) + ` [${slot1} | ${slot2} | ${slot3}]`;
     }
-          }
+}
+
+//Helper function for string formatting
+function sprintf(str, ...args){
+    return str.replace(/%(\d+)/g, (match, index) => args[index-1] || '');
+                                       }
+                       
