@@ -3,41 +3,37 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = {
-  name: 'owner',
+  name: 'developer',
   category: 'Admin',
   execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
     const { threadID } = event;
 
-    const ownerInfo = {
-      name: 'Aljur Pogoy',
-      gender: 'Male',
-      age: 'over 5000 Years ago',
-      height: 'Null',
-      facebookLink: 'https://www.facebook.com/aljur.pogoy.2024', // Placeholder, you'll likely need to extract this 
-      nick: 'Seven shadosws'
+    const developer = {
+      name: 'Aljur Pogoy', 
+      gfname: 'Ana Sophia',
+      height: "5'8",
+      age: 17,
+      imageUrl: 'https://imgur.com/a/r7Vi23B.jpg' // Replace with your Imgur image URL
     };
 
-    const response = `Owner Information:🧾
-Name: ${ownerInfo.name}
-Gender: ${ownerInfo.gender}
-Age: ${ownerInfo.age}
-Height: ${ownerInfo.height}
-Facebook: ${ownerInfo.facebookLink}
-Nick: ${ownerInfo.nick}`;
+    const response = `Developer Information 🧾
+Name: ${developer.name}
+gfname: ${developer.gfname}
+height: ${developer.height}
+Age: ${developer.age}`;
 
     try {
-      await sendMessage(api, { threadID, message: response }); // Send text first
+      // Send text first
+      await sendMessage(api, { threadID, message: response });
 
-      // Your Imgur image URL
-      const imageUrl = 'https://imgur.com/a/r7Vi23B.jpg'; // Replace with your actual URL
-
+      // Download and send the image
       const tmpFolderPath = path.join(__dirname, 'tmp');
       if (!fs.existsSync(tmpFolderPath)) {
         fs.mkdirSync(tmpFolderPath);
       }
 
-      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-      const imagePath = path.join(tmpFolderPath, 'owner_image.jpg'); // Adjust the extension if needed
+      const imageResponse = await axios.get(developer.imageUrl, { responseType: 'arraybuffer' });
+      const imagePath = path.join(tmpFolderPath, 'developer_image.jpg');
       fs.writeFileSync(imagePath, Buffer.from(imageResponse.data, 'binary'));
 
       const msg = {
@@ -53,4 +49,3 @@ Nick: ${ownerInfo.nick}`;
     }
   },
 };
-        
