@@ -1,20 +1,19 @@
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
 module.exports = {
   name: 'owner',
-  category: 'Utils',
+  category: 'Admin',
   execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
     const { threadID } = event;
 
     const ownerInfo = {
-      name: 'Aljur Pogoy',
+      name: 'Aljur Pogoy & jun jaam',
       gender: 'Male',
-      age: 'over 5000 Years ago',
+      age: 'over 50000 Years ago',
       height: 'Null',
       facebookLink: 'https://www.facebook.com/profile.php?id=100073129302064',
-      nick: 'Seven Shadow'
+      nick: 'Seven Shadows'
     };
 
     const response = `
@@ -30,28 +29,26 @@ Nick: ${ownerInfo.nick}
     try {
       await sendMessage(api, { threadID, message: response }); // Send text first
 
-      // Replace 'YOUR_IMGUR_VIDEO_URL' with your actual Imgur video URL
-      const videoUrl = 'https://imgur.com/a/seven-shadow-Ht8jilP';
+      // Your image dictionary - replace with your actual image files
+      const imageDict = {
+        'image1': 'image/c55534714fe57cdb9e580d32923c8856.jpg'
+        // ... more image file names
+      };
 
-      const tmpFolderPath = path.join(__dirname, 'tmp');
-      if (!fs.existsSync(tmpFolderPath)) {
-        fs.mkdirSync(tmpFolderPath);
-      }
+      // Choose an image from the dictionary - you'll need to modify this logic
+      const imageName = 'image1'; // Replace with your selection logic 
+      const imagePath = path.join(__dirname, imageDict[imageName]); 
 
-      const videoResponse = await axios.get(videoUrl, { responseType: 'arraybuffer' });
-      const videoPath = path.join(tmpFolderPath, 'owner_video.mp4'); // You can adjust the extension if needed
-      fs.writeFileSync(videoPath, Buffer.from(videoResponse.data, 'binary'));
+      const msg = {
+        body: "",
+        attachment: fs.createReadStream(imagePath) 
+      };
 
-      await sendMessage(api, {
-        threadID,
-        attachment: fs.createReadStream(videoPath)
-      }); 
+      await sendMessage(api, msg, event.threadID); 
 
     } catch (error) {
-      console.error("Error downloading or sending video:", error);
-      await sendMessage(api, { threadID, message: "Error sending video. Please try again." });
+      console.error("Error sending owner info or image:", error);
+      await sendMessage(api, { threadID, message: "Error sending owner information. Check console logs." });
     }
   },
 };
-
-      
