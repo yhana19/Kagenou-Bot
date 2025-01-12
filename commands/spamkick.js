@@ -17,7 +17,7 @@ module.exports = {
       return;
     }
 
-    const action = args[0].toLowerCase();
+    const action = args[1].toLowerCase();
     if (action === 'on') {
       // Turn spamkick ON
       appState.spamkick = true; // Store the state in appState
