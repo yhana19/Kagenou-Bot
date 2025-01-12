@@ -1,3 +1,4 @@
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,47 +9,48 @@ module.exports = {
     const { threadID } = event;
 
     const ownerInfo = {
-      name: 'Aljur Pogoy & jun jaam',
+      name: 'Aljur Pogoy',
       gender: 'Male',
-      age: 'over 50000 Years ago',
+      age: 'over 5000 Years ago',
       height: 'Null',
-      facebookLink: 'https://www.facebook.com/profile.php?id=100073129302064',
-      nick: 'Seven Shadows'
+      facebookLink: 'https://www.facebook.com/aljur.pogoy.2024', // Placeholder, you'll likely need to extract this 
+      nick: 'Seven shadosws'
     };
 
-    const response = `
-Owner Information:🧾
+    const response = `Owner Information:🧾
 Name: ${ownerInfo.name}
 Gender: ${ownerInfo.gender}
 Age: ${ownerInfo.age}
 Height: ${ownerInfo.height}
 Facebook: ${ownerInfo.facebookLink}
-Nick: ${ownerInfo.nick}
-`;
+Nick: ${ownerInfo.nick}`;
 
     try {
       await sendMessage(api, { threadID, message: response }); // Send text first
 
-      // Your image dictionary - replace with your actual image files
-      const imageDict = {
-        'image1': 'image/c55534714fe57cdb9e580d32923c8856.jpg'
-        // ... more image file names
-      };
+      // Your Imgur image URL
+      const imageUrl = 'https://imgur.com/a/r7Vi23B'; // Replace with your actual URL
 
-      // Choose an image from the dictionary - you'll need to modify this logic
-      const imageName = 'image1'; // Replace with your selection logic 
-      const imagePath = path.join(__dirname, imageDict[imageName]); 
+      const tmpFolderPath = path.join(__dirname, 'tmp');
+      if (!fs.existsSync(tmpFolderPath)) {
+        fs.mkdirSync(tmpFolderPath);
+      }
+
+      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+      const imagePath = path.join(tmpFolderPath, 'owner_image.jpg'); // Adjust the extension if needed
+      fs.writeFileSync(imagePath, Buffer.from(imageResponse.data, 'binary'));
 
       const msg = {
-        body: "",
-        attachment: fs.createReadStream(imagePath) 
+        body: '', // No body needed
+        attachment: fs.createReadStream(imagePath)
       };
 
       await sendMessage(api, msg, event.threadID); 
 
     } catch (error) {
-      console.error("Error sending owner info or image:", error);
-      await sendMessage(api, { threadID, message: "Error sending owner information. Check console logs." });
+      console.error("Error downloading or sending image:", error);
+      await sendMessage(api, { threadID, message: "Error sending image. Please try again." });
     }
   },
 };
+        
