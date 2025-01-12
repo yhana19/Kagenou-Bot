@@ -9,7 +9,7 @@ module.exports = {
       gfname: 'Ana Sophia',
       height: "5'8",
       age: 17,
-      imageUrl: 'https://imgur.com/a/r7Vi23B.jpg'
+      imageUrl: 'https://imgur.com/a/r7Vi23B.jpg' // This is the image URL
     };
     const response = `Developer Information 🧾
 Name: ${developer.name}
