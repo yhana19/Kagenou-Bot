@@ -12,7 +12,7 @@ module.exports = {
       const encodedPrompt = encodeURIComponent(prompt);
 
     
-      const apiUrl = `https://zaikyoo.onrender.com/api/gemini-flash?prompt=${encodedPrompt}`; 
+      const apiUrl = `https://kaiz-apis.gleeze.com/api/bert-ai?prompt=${encodedPrompt}`; 
 
       const response = await axios.get(apiUrl); // Use GET for your API
       const answer = response.data.response.answer; // Adjust based on your API response
