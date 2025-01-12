@@ -11,7 +11,7 @@ module.exports = {
       gfname: 'Ana Sophia',
       height: "5'8",
       age: 17,
-      imageUrl: path.join(__dirname, '../image/c55534714fe57cdb9e580d32923c8856.jpg) // Correct path
+      imageUrl: path.join(__dirname, '../image/c55534714fe57cdb9e580d32923c8856.jpg') // Correct path
     };
     const message = `Developer Information 🧾
 Name: ${developer.name}
