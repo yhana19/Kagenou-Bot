@@ -29,7 +29,7 @@ Nick: ${ownerInfo.nick}`;
       await sendMessage(api, { threadID, message: response }); // Send text first
 
       // Your Imgur image URL
-      const imageUrl = 'https://imgur.com/a/r7Vi23B'; // Replace with your actual URL
+      const imageUrl = 'https://imgur.com/a/r7Vi23B.jpg'; // Replace with your actual URL
 
       const tmpFolderPath = path.join(__dirname, 'tmp');
       if (!fs.existsSync(tmpFolderPath)) {
