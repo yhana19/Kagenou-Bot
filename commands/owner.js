@@ -13,7 +13,7 @@ module.exports = {
       gfname: 'Ana Sophia',
       height: "5'8",
       age: 17,
-      imageUrl: 'https://imgur.com/a/r7Vi23B.jpg' // Replace with your Imgur image URL
+      imageUrl: 'https://imgur.com/a/r7Vi23B.jpg'
     };
 
     const response = `Developer Information 🧾
@@ -23,22 +23,18 @@ height: ${developer.height}
 Age: ${developer.age}`;
 
     try {
-      // Send text first
+      
       await sendMessage(api, { threadID, message: response });
 
-      // Download and send the image
-      const tmpFolderPath = path.join(__dirname, 'tmp');
-      if (!fs.existsSync(tmpFolderPath)) {
-        fs.mkdirSync(tmpFolderPath);
-      }
+      
 
-      const imageResponse = await axios.get(developer.imageUrl, { responseType: 'arraybuffer' });
-      const imagePath = path.join(tmpFolderPath, 'developer_image.jpg');
-      fs.writeFileSync(imagePath, Buffer.from(imageResponse.data, 'binary'));
+      const imageResponse = await axios.get(developer.imageUrl, { responseType: 'stream' });
+
+      
 
       const msg = {
-        body: '', // No body needed
-        attachment: fs.createReadStream(imagePath)
+        body: '',
+        attachment: imageResponse.data
       };
 
       await sendMessage(api, msg, event.threadID); 
