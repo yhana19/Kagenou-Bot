@@ -8,8 +8,8 @@ module.exports = {
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
         const { threadID } = event;
         try {
-            // Initialize user data if not exists
-            const userData = appState.users[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 };
+            // Store user data within the command context
+            const userData = this.userData[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 }; 
 
             // Validate the command format
             if (args[1] !== 'spin' || !args[1]) {
@@ -56,12 +56,13 @@ module.exports = {
             // Display the slots and the result
             sendMessage(api, { threadID, message: `Slots: ${slots.join(' | ')} \n${winMessage}` });
 
-            // Update user data in appState
-            appState.users[event.senderID] = userData;
+            // Update user data within the command context
+            this.userData[event.senderID] = userData; 
         } catch (error) {
             console.error('Error processing command:', error);
             sendMessage(api, { threadID, message: `Error: ${error.message}` });
         }
     },
+    userData: {} // Initialize an empty object to store user data
 };
-      
+                                      
