@@ -67,10 +67,11 @@ const saveUserData = () => {
     }
 };
 
+
 const loginToFacebook = async () => {
     try {
         api = await new Promise((resolve, reject) => {
-            login({ appState: global.userData }, (err, apiInstance) => { // Pass global.userData to login
+            login({}, (err, apiInstance) => { // Remove appState from login
                 if (err) reject(err);
                 else resolve(apiInstance);
             });
@@ -113,7 +114,7 @@ const handleMessage = async (api, event, args, sendMessage) => {
     if (commandName === 'prefix' && commands.has('prefix')) {
         const command = commands.get('prefix');
         try {
-            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, global.userData, sendMessage); // Pass global.userData to command
+            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, global.userData, sendMessage);
         } catch (error) {
             sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
         }
@@ -122,7 +123,7 @@ const handleMessage = async (api, event, args, sendMessage) => {
         const command = commands.get(commandName);
         if (command) {
             try {
-                await command.execute(api, event, args, commands, prefix, config.admins, global.userData, sendMessage); // Pass global.userData to command
+                await command.execute(api, event, args, commands, prefix, config.admins, global.userData, sendMessage);
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
@@ -145,6 +146,7 @@ const startListeningForMessages = () => {
             if (senderID === api.getCurrentUserID()) return;
             const args = body.trim().split(/ +/);
             await handleMessage(api, event, args, sendMessage);
+            saveUserData(); // Save user data after each message
         }
     });
 };
@@ -155,4 +157,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
-            
