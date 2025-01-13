@@ -32,19 +32,6 @@ const loadCommands = () => {
 loadCommands();
 console.log('Commands loaded:', commands);
 
-
-// Load appState
-let appState = {};
-try {
-    const appStateRaw = fs.readFileSync('./appstate.json', 'utf8');
-    appState = JSON.parse(appStateRaw);
-    console.log('appState loaded successfully.');
-} catch (error) {
-    console.error('Error loading appstate.json:', error);
-    // Don't exit immediately; allow the user to create appstate.json.
-    console.warn('appstate.json not found. Please login to create it.');
-}
-
 // Load config
 let config = { admins: [] };
 try {
@@ -56,12 +43,34 @@ try {
 }
 
 const prefix = '/';
-
 let api = null;
+global.userData = {}; // Initialize global userData
+
+const loadUserData = () => {
+    try {
+        const userDataRaw = fs.readFileSync('./userData.json', 'utf8');
+        global.userData = JSON.parse(userDataRaw);
+        console.log('User data loaded successfully.');
+    } catch (error) {
+        console.error('Error loading userData.json:', error);
+        console.warn('userData.json not found. Creating a new one.');
+    }
+};
+
+const saveUserData = () => {
+    try {
+        const userDataString = JSON.stringify(global.userData, null, 2);
+        fs.writeFileSync('./userData.json', userDataString);
+        console.log('User data saved successfully.');
+    } catch (error) {
+        console.error('Error saving userData.json:', error);
+    }
+};
+
 const loginToFacebook = async () => {
     try {
         api = await new Promise((resolve, reject) => {
-            login({ appState }, (err, apiInstance) => {
+            login({ appState: global.userData }, (err, apiInstance) => { // Pass global.userData to login
                 if (err) reject(err);
                 else resolve(apiInstance);
             });
@@ -76,6 +85,7 @@ const loginToFacebook = async () => {
 };
 
 const startBot = async () => {
+    loadUserData(); // Load user data on startup
     api = await loginToFacebook();
     startListeningForMessages();
 };
@@ -103,7 +113,7 @@ const handleMessage = async (api, event, args, sendMessage) => {
     if (commandName === 'prefix' && commands.has('prefix')) {
         const command = commands.get('prefix');
         try {
-            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, global.userData, sendMessage); // Pass global.userData to command
         } catch (error) {
             sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
         }
@@ -112,7 +122,7 @@ const handleMessage = async (api, event, args, sendMessage) => {
         const command = commands.get(commandName);
         if (command) {
             try {
-                await command.execute(api, event, args, commands, prefix, config.admins, appState, sendMessage);
+                await command.execute(api, event, args, commands, prefix, config.admins, global.userData, sendMessage); // Pass global.userData to command
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
@@ -132,9 +142,7 @@ const startListeningForMessages = () => {
         }
         if (event.type === 'message') {
             const { body, threadID, senderID } = event;
-
             if (senderID === api.getCurrentUserID()) return;
-
             const args = body.trim().split(/ +/);
             await handleMessage(api, event, args, sendMessage);
         }
@@ -147,3 +155,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
+            
