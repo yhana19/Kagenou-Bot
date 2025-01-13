@@ -24,7 +24,7 @@ module.exports = {
       }, threadID);
     } catch (error) {
       console.error('Error fetching or sending image:', error);
-      sendMessage(api, { threadID, message: `The bot's prefix is: \`${currentPrefix}\`\nError displaying image: ${error.message}` });
+      sendMessage(api, { threadID, message: `🌐 Global system prefix: \`${currentPrefix}\`\nError displaying image: ${error.message}` });
     }
   },
 };
