@@ -32,7 +32,6 @@ const loadCommands = () => {
 loadCommands();
 console.log('Commands loaded:', commands);
 
-
 // Load appState
 let appState = {};
 try {
@@ -45,7 +44,7 @@ try {
 }
 
 // Load config
-let config = { admins: [] }; 
+let config = { admins: [] };
 try {
     const configRaw = fs.readFileSync('./config.json', 'utf8');
     config = JSON.parse(configRaw);
@@ -55,8 +54,8 @@ try {
 }
 
 const prefix = '/';
-
 let api = null;
+
 const loginToFacebook = async () => {
     try {
         api = await new Promise((resolve, reject) => {
@@ -100,21 +99,22 @@ const handleMessage = async (api, event, args, sendMessage) => {
     const command = commands.get(commandName);
 
     if (command) {
-        const isPrefixed = message.startsWith(prefix);
-
-        if (!isPrefixed) {
+        // Check if the command is 'prefix' and if the message starts with prefix. 
+        if (commandName === 'prefix' && !message.startsWith(prefix)) {
+            // If the command is 'prefix' and the message is NOT prefixed, execute it.
             try {
                 await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
-        } else {
+        } else if (message.startsWith(prefix)) {
+            // If the command is NOT 'prefix' or the message is prefixed, execute normally.
             try {
                 await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
-        }
+        } 
     } else if (isAdmin) {
         // Handle non-command messages from admins (if needed)
     }
@@ -128,9 +128,7 @@ const startListeningForMessages = () => {
         }
         if (event.type === 'message') {
             const { body, threadID, senderID } = event;
-
             if (senderID === api.getCurrentUserID()) return;
-
             const args = body.trim().split(/ +/);
             await handleMessage(api, event, args, sendMessage);
         }
@@ -143,4 +141,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
-            
