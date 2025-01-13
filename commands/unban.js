@@ -1,27 +1,29 @@
-const fs = require('node:fs/promises');
+const axios = require('axios');
+const fs = require('fs');
 const path = require('path');
 
 module.exports = {
     name: 'unban',
+    category: 'Admin',
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
-        if (!admins.includes(event.senderID)) {
-            return sendMessage(api, { threadID: event.threadID, message: 'You do not have permission to use this command.' });
+        const { threadID } = event;
+        const userIDToUnban = args[1];
+
+        if (!userIDToUnban) {
+            sendMessage(api, { threadID, message: 'Please provide the user ID to unban.' });
+            return;
         }
 
-        const userID = args[1];
-        if (!userID) {
-            return sendMessage(api, { threadID: event.threadID, message: 'Please specify a user ID to unban.' });
+        // Remove the user from the banned list
+        const index = appState.bannedUsers.indexOf(userIDToUnban);
+        if (index > -1) {
+            appState.bannedUsers.splice(index, 1);
+            sendMessage(api, { threadID, message: `${userIDToUnban} has been unbanned.` });
+        } else {
+            sendMessage(api, { threadID, message: `${userIDToUnban} is not banned.` });
         }
 
-        try {
-            const banlistPath = path.join(__dirname, 'banlist.json');
-            let banlist = JSON.parse(await fs.readFile(banlistPath, 'utf8')) || [];
-            banlist = banlist.filter((user) => user.userID !== userID);
-            await fs.writeFile(banlistPath, JSON.stringify(banlist, null, 2));
-            sendMessage(api, { threadID: event.threadID, message: `${userID} has been unbanned.` });
-        } catch (error) {
-            console.error('Error unbanning user:', error);
-            sendMessage(api, { threadID: event.threadID, message: 'Error unbanning user. Please check the console for details.' });
-        }
+        // Save the updated banned list
+        fs.writeFileSync('./appstate.json', JSON.stringify(appState, null, 2));
     },
 };
