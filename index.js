@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const login = require('ws3-fca'); // Your Facebook Messenger library
+const login = require('ws3-fca');
 const axios = require('axios');
 
 const app = express();
@@ -45,7 +45,7 @@ try {
 }
 
 // Load config
-let config = { admins: [] }; // Default values
+let config = { admins: [] }; 
 try {
     const configRaw = fs.readFileSync('./config.json', 'utf8');
     config = JSON.parse(configRaw);
@@ -54,11 +54,8 @@ try {
     console.warn('Using default config (no admins).');
 }
 
-// Define prefix here
-const prefix = '/'; // You can change this if needed
+const prefix = '/';
 
-
-// Facebook login
 let api = null;
 const loginToFacebook = async () => {
     try {
@@ -83,39 +80,45 @@ const startBot = async () => {
 };
 
 const sendMessage = async (api, messageData) => {
-  try {
-    const { threadID, message } = messageData;
-    if (!message || message.trim() === "") return;
-    api.sendMessage(message, threadID, (err) => {
-      if (err) console.error("Error sending message:", err);
-    });
-  } catch (error) {
-    console.error("Error in sendMessage:", error);
-  }
+    try {
+        const { threadID, message } = messageData;
+        if (!message || message.trim() === "") return;
+        api.sendMessage(message, threadID, (err) => {
+            if (err) console.error("Error sending message:", err);
+        });
+    } catch (error) {
+        console.error("Error in sendMessage:", error);
+    }
 };
 
 const handleMessage = async (api, event, args, sendMessage) => {
     const { threadID, senderID, body } = event;
     const message = body.toLowerCase();
     const isAdmin = config.admins.includes(senderID);
+    const words = message.trim().split(/ +/);
+    const commandName = words[0].toLowerCase();
+    const command = commands.get(commandName);
 
-    if (message.startsWith(prefix)) {
-      const commandName = message.slice(prefix.length).trim().split(/ +/)[0].toLowerCase();
-      const command = commands.get(commandName);
-      if (command) {
-        try {
-          await command.execute(api, event, args, commands, prefix, config.admins, appState, sendMessage);
-        } catch (error) {
-          sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+    if (command) {
+        const isPrefixed = message.startsWith(prefix);
+
+        if (!isPrefixed) {
+            try {
+                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+            } catch (error) {
+                sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+            }
+        } else {
+            try {
+                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+            } catch (error) {
+                sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+            }
         }
-      } else {
-        sendMessage(api, { threadID, message: `Command Not found: ${commandName}` });
-      }
     } else if (isAdmin) {
-      // Handle non-command messages from admins (if needed)
+        // Handle non-command messages from admins (if needed)
     }
 };
-
 
 const startListeningForMessages = () => {
     api.listenMqtt(async (err, event) => {
@@ -126,7 +129,6 @@ const startListeningForMessages = () => {
         if (event.type === 'message') {
             const { body, threadID, senderID } = event;
 
-            // Ignore messages from the bot itself
             if (senderID === api.getCurrentUserID()) return;
 
             const args = body.trim().split(/ +/);
@@ -136,7 +138,6 @@ const startListeningForMessages = () => {
 };
 
 startBot();
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
