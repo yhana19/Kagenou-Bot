@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const login = require('ws3-fca');
+const login = require('ws3-fca'); // Make sure this is installed correctly
 const axios = require('axios');
 
 const app = express();
@@ -41,11 +41,12 @@ try {
     console.log('appState loaded successfully.');
 } catch (error) {
     console.error('Error loading appstate.json:', error);
-    process.exit(1);
+    // Don't exit immediately; allow the user to create appstate.json.
+    console.warn('appstate.json not found. Please login to create it.');
 }
 
 // Load config
-let config = { admins: [] }; 
+let config = { admins: [] };
 try {
     const configRaw = fs.readFileSync('./config.json', 'utf8');
     config = JSON.parse(configRaw);
@@ -97,23 +98,26 @@ const handleMessage = async (api, event, args, sendMessage) => {
     const isAdmin = config.admins.includes(senderID);
     const words = message.trim().split(/ +/);
     const commandName = words[0].toLowerCase();
-    const command = commands.get(commandName);
 
-    if (command) {
-        const isPrefixed = message.startsWith(prefix);
-
-        if (!isPrefixed) {
+    // Check for the 'prefix' command specifically (no prefix needed)
+    if (commandName === 'prefix' && commands.has('prefix')) {
+        const command = commands.get('prefix');
+        try {
+            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+        } catch (error) {
+            sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+        }
+    } else if (message.startsWith(prefix)) { // Handle other commands (require prefix)
+        const commandName = message.slice(prefix.length).trim().split(/ +/)[0].toLowerCase();
+        const command = commands.get(commandName);
+        if (command) {
             try {
-                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+                await command.execute(api, event, args, commands, prefix, config.admins, appState, sendMessage);
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
         } else {
-            try {
-                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
-            } catch (error) {
-                sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
-            }
+            sendMessage(api, { threadID, message: `Command not found: ${commandName}` });
         }
     } else if (isAdmin) {
         // Handle non-command messages from admins (if needed)
