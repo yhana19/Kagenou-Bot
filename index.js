@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const login = require('ws3-fca'); // Make sure this is installed correctly
+const login = require('ws3-fca');
 const axios = require('axios');
 
 const app = express();
@@ -32,8 +32,20 @@ const loadCommands = () => {
 loadCommands();
 console.log('Commands loaded:', commands);
 
+
+// Load appState
+let appState = {};
+try {
+    const appStateRaw = fs.readFileSync('./appstate.json', 'utf8');
+    appState = JSON.parse(appStateRaw);
+    console.log('appState loaded successfully.');
+} catch (error) {
+    console.error('Error loading appstate.json:', error);
+    process.exit(1);
+}
+
 // Load config
-let config = { admins: [] };
+let config = { admins: [] }; 
 try {
     const configRaw = fs.readFileSync('./config.json', 'utf8');
     config = JSON.parse(configRaw);
@@ -43,35 +55,12 @@ try {
 }
 
 const prefix = '/';
+
 let api = null;
-global.userData = {}; // Initialize global userData
-
-const loadUserData = () => {
-    try {
-        const userDataRaw = fs.readFileSync('./userData.json', 'utf8');
-        global.userData = JSON.parse(userDataRaw);
-        console.log('User data loaded successfully.');
-    } catch (error) {
-        console.error('Error loading userData.json:', error);
-        console.warn('userData.json not found. Creating a new one.');
-    }
-};
-
-const saveUserData = () => {
-    try {
-        const userDataString = JSON.stringify(global.userData, null, 2);
-        fs.writeFileSync('./userData.json', userDataString);
-        console.log('User data saved successfully.');
-    } catch (error) {
-        console.error('Error saving userData.json:', error);
-    }
-};
-
-
 const loginToFacebook = async () => {
     try {
         api = await new Promise((resolve, reject) => {
-            login({}, (err, apiInstance) => { // Remove appState from login
+            login({ appState }, (err, apiInstance) => {
                 if (err) reject(err);
                 else resolve(apiInstance);
             });
@@ -86,7 +75,6 @@ const loginToFacebook = async () => {
 };
 
 const startBot = async () => {
-    loadUserData(); // Load user data on startup
     api = await loginToFacebook();
     startListeningForMessages();
 };
@@ -109,26 +97,23 @@ const handleMessage = async (api, event, args, sendMessage) => {
     const isAdmin = config.admins.includes(senderID);
     const words = message.trim().split(/ +/);
     const commandName = words[0].toLowerCase();
+    const command = commands.get(commandName);
 
-    // Check for the 'prefix' command specifically (no prefix needed)
-    if (commandName === 'prefix' && commands.has('prefix')) {
-        const command = commands.get('prefix');
-        try {
-            await command.execute(api, event, words.slice(1), commands, prefix, config.admins, global.userData, sendMessage);
-        } catch (error) {
-            sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
-        }
-    } else if (message.startsWith(prefix)) { // Handle other commands (require prefix)
-        const commandName = message.slice(prefix.length).trim().split(/ +/)[0].toLowerCase();
-        const command = commands.get(commandName);
-        if (command) {
+    if (command) {
+        const isPrefixed = message.startsWith(prefix);
+
+        if (!isPrefixed) {
             try {
-                await command.execute(api, event, args, commands, prefix, config.admins, global.userData, sendMessage);
+                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
             } catch (error) {
                 sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
             }
         } else {
-            sendMessage(api, { threadID, message: `Command not found: ${commandName}` });
+            try {
+                await command.execute(api, event, words.slice(1), commands, prefix, config.admins, appState, sendMessage);
+            } catch (error) {
+                sendMessage(api, { threadID, message: `Error executing command: ${error.message}` });
+            }
         }
     } else if (isAdmin) {
         // Handle non-command messages from admins (if needed)
@@ -143,10 +128,11 @@ const startListeningForMessages = () => {
         }
         if (event.type === 'message') {
             const { body, threadID, senderID } = event;
+
             if (senderID === api.getCurrentUserID()) return;
+
             const args = body.trim().split(/ +/);
             await handleMessage(api, event, args, sendMessage);
-            saveUserData(); // Save user data after each message
         }
     });
 };
@@ -157,3 +143,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
+            
