@@ -1,4 +1,4 @@
-const fs = require('fs-extra'); // Use fs-extra for better file handling
+const fs = require('fs-extra');
 
 const spamStatesFile = 'spam.json';
 let spamStates = loadSpamStates();
@@ -29,8 +29,17 @@ module.exports = {
     const { threadID, senderID } = event;
     const isAdmin = admins.includes(senderID);
 
+    // Check if bot is admin before proceeding
+    const threadInfo = await api.getThreadInfo(threadID);
+    const isBotAdmin = threadInfo.adminIDs.some(admin => admin.id === api.getCurrentUserID());
+
+    if (!isBotAdmin) {
+      sendMessage(api, { threadID, message: "I'm not an admin. Please make me an admin for this group chat." });
+      return;
+    }
+
     if (!isAdmin) {
-      sendMessage(api, { threadID, message: "You don't have permission to use this command, Only admin can use this feature." });
+      sendMessage(api, { threadID, message: "You don't have permission to use this command." });
       return;
     }
 
@@ -48,10 +57,10 @@ module.exports = {
     }
   },
   onChat: function({ api, event }) {
-    const { threadID, senderID } = event;
+    const { threadID, senderID, message } = event;
 
-    // Check if anti-spam is enabled for the thread
-    if (spamStates[threadID] !== 'on') return; 
+    // Check if anti-spam is enabled for the thread and if the message is not a command
+    if (spamStates[threadID] !== 'on' || message.startsWith(prefix)) return;
 
     // Initialize message counts for the thread if needed
     if (!messageCounts[threadID]) {
@@ -69,10 +78,13 @@ module.exports = {
     } else {
       messageCounts[threadID][senderID].count++;
       if (messageCounts[threadID][senderID].count > spamThreshold) {
-        api.removeUserFromGroup(senderID, threadID); // Kick the user
-        sendMessage(api, { threadID, message: `User ${senderID} kicked for spamming.` });
+        api.removeUserFromGroup(senderID, threadID, (err) => {
+          if (err) console.error("Error removing user:", err);
+          else sendMessage(api, { threadID, message: `User ${senderID} kicked for spamming.` });
+        });
         delete messageCounts[threadID][senderID]; // Remove count for kicked user
       }
     }
   },
 };
+    
