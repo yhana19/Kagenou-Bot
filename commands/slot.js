@@ -5,11 +5,10 @@ const path = require('path');
 module.exports = {
     name: 'slot',
     category: 'Games',
-    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
+    execute: async (api, event, args, commands, prefix, admins, userData, sendMessage) => {
         const { threadID } = event;
         try {
-            // Store user data within the command context
-            const userData = this.userData[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 }; 
+            const senderID = event.senderID;
 
             // Validate the command format
             if (args[1] !== 'spin' || !args[1]) {
@@ -26,13 +25,13 @@ module.exports = {
             }
 
             // Check if the user has enough balance to play
-            if (userData.balance < betAmount) {
+            if (userData[senderID].balance < betAmount) {
                 sendMessage(api, { threadID, message: `You don't have enough balance to bet ${betAmount}.` });
                 return;
             }
 
             // Deduct balance
-            userData.balance -= betAmount;
+            userData[senderID].balance -= betAmount;
 
             // Generate random slots
             const slots = [];
@@ -45,24 +44,21 @@ module.exports = {
             let winMessage = `You lost! You bet ${betAmount} and lost it.`;
             if (slots[0] === slots[1] && slots[1] === slots[2]) {
                 // Triple Match
-                userData.balance += betAmount * 10; // Win 10 times the bet
+                userData[senderID].balance += betAmount * 10; // Win 10 times the bet
                 winMessage = `Congratulations! You won! You got a triple ${slots[0]}! You won ${betAmount * 10} balance!`;
             } else if (slots[0] === slots[1] || slots[1] === slots[2] || slots[0] === slots[2]) {
                 // Double Match
-                userData.balance += betAmount * 5; // Win 5 times the bet
+                userData[senderID].balance += betAmount * 5; // Win 5 times the bet
                 winMessage = `You won! You got a double ${slots[0]}! You won ${betAmount * 5} balance!`;
             }
 
             // Display the slots and the result
             sendMessage(api, { threadID, message: `Slots: ${slots.join(' | ')} \n${winMessage}` });
 
-            // Update user data within the command context
-            this.userData[event.senderID] = userData; 
         } catch (error) {
             console.error('Error processing command:', error);
             sendMessage(api, { threadID, message: `Error: ${error.message}` });
         }
     },
-    userData: {} // Initialize an empty object to store user data
 };
-                                      
+                    
