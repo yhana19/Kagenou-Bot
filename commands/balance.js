@@ -8,8 +8,8 @@ module.exports = {
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
         const { threadID } = event;
         try {
-            // Initialize user data if not exists
-            const userData = appState.users[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 };
+            // Store user data within the command context
+            const userData = this.userData[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 }; 
 
             sendMessage(api, { threadID, message: `Your current balance is: ${userData.balance}` });
         } catch (error) {
@@ -17,4 +17,5 @@ module.exports = {
             sendMessage(api, { threadID, message: `Error: ${error.message}` });
         }
     },
+    userData: {} // Initialize an empty object to store user data
 };
