@@ -32,7 +32,6 @@ const loadCommands = () => {
 loadCommands();
 console.log('Commands loaded:', commands);
 
-
 // Load appState
 let appState = {};
 try {
@@ -56,8 +55,8 @@ try {
 }
 
 const prefix = '/';
-
 let api = null;
+
 const loginToFacebook = async () => {
     try {
         api = await new Promise((resolve, reject) => {
@@ -99,6 +98,12 @@ const handleMessage = async (api, event, args, sendMessage) => {
     const words = message.trim().split(/ +/);
     const commandName = words[0].toLowerCase();
 
+    // Check if the user is banned
+    if (appState.bannedUsers && appState.bannedUsers.includes(senderID)) {
+        sendMessage(api, { threadID, message: 'You have been banned from using this bot.' });
+        return;
+    }
+
     // Check for the 'prefix' command specifically (no prefix needed)
     if (commandName === 'prefix' && commands.has('prefix')) {
         const command = commands.get('prefix');
@@ -132,9 +137,7 @@ const startListeningForMessages = () => {
         }
         if (event.type === 'message') {
             const { body, threadID, senderID } = event;
-
             if (senderID === api.getCurrentUserID()) return;
-
             const args = body.trim().split(/ +/);
             await handleMessage(api, event, args, sendMessage);
         }
@@ -147,4 +150,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
-                        
+              
