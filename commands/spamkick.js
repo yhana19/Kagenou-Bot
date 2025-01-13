@@ -35,11 +35,11 @@ module.exports = {
     }
 
     // Toggle anti-spam for the thread
-    if (args[0] === 'on') {
+    if (args[1] === 'on') {
       spamStates[threadID] = 'on';
       saveSpamStates(spamStates);
       sendMessage(api, { threadID, message: 'Anti-spam is now turned ON for this chat.' });
-    } else if (args[0] === 'off') {
+    } else if (args[1] === 'off') {
       spamStates[threadID] = 'off';
       saveSpamStates(spamStates);
       sendMessage(api, { threadID, message: 'Anti-spam is now turned OFF for this chat.' });
