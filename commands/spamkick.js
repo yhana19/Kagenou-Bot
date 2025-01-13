@@ -9,7 +9,7 @@ module.exports = {
         const { threadID } = event;
 
         try {
-            const imgurMp4Link = 'https://imgur.com/a/seven-shadows-KKVtWtV.mp4'; // Your Imgur MP4 link
+            const imgurMp4Link = 'https://imgur.com/wcf5YVv.mp4'; // Your Imgur MP4 link
 
             const tmpFolderPath = path.join(__dirname, 'tmp');
             if (!fs.existsSync(tmpFolderPath)) {
