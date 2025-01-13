@@ -5,11 +5,10 @@ const path = require('path');
 module.exports = {
     name: 'bank',
     category: 'Games',
-    execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
+    execute: async (api, event, args, commands, prefix, admins, userData, sendMessage) => {
         const { threadID } = event;
         try {
-            // Store user data within the command context
-            const userData = this.userData[event.senderID] || { balance: 0, bank: 0, lastDailyClaim: 0 }; 
+            const senderID = event.senderID;
 
             // Check the second argument for deposit or withdraw
             const action = args[1];
@@ -23,33 +22,29 @@ module.exports = {
 
             if (action === 'deposit') {
                 // Deposit
-                if (userData.balance < amount) {
+                if (userData[senderID].balance < amount) {
                     sendMessage(api, { threadID, message: 'Insufficient balance.' });
                     return;
                 }
-                userData.balance -= amount;
-                userData.bank += amount;
-                sendMessage(api, { threadID, message: `You deposited ${amount} into your bank. Your new balance is ${userData.balance} and bank balance is ${userData.bank}` });
+                userData[senderID].balance -= amount;
+                userData[senderID].bank += amount;
+                sendMessage(api, { threadID, message: `You deposited ${amount} into your bank. Your new balance is ${userData[senderID].balance} and bank balance is ${userData[senderID].bank}` });
             } else if (action === 'withdraw') {
                 // Withdraw
-                if (userData.bank < amount) {
+                if (userData[senderID].bank < amount) {
                     sendMessage(api, { threadID, message: 'Insufficient bank balance.' });
                     return;
                 }
-                userData.bank -= amount;
-                userData.balance += amount;
-                sendMessage(api, { threadID, message: `You withdrew ${amount} from your bank. Your new balance is ${userData.balance} and bank balance is ${userData.bank}` });
+                userData[senderID].bank -= amount;
+                userData[senderID].balance += amount;
+                sendMessage(api, { threadID, message: `You withdrew ${amount} from your bank. Your new balance is ${userData[senderID].balance} and bank balance is ${userData[senderID].bank}` });
             } else {
                 sendMessage(api, { threadID, message: 'Invalid action. Please use "deposit" or "withdraw".' });
             }
 
-            // Update user data within the command context
-            this.userData[event.senderID] = userData; 
         } catch (error) {
             console.error('Error processing command:', error);
             sendMessage(api, { threadID, message: `Error: ${error.message}` });
         }
     },
-    userData: {} // Initialize an empty object to store user data
 };
-                                  
