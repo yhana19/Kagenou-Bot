@@ -3,24 +3,25 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = {
-    name: 'Geminiflash',
+    name: 'gpt4pro',
     category: 'LLM',
     execute: async (api, event, args, commands, prefix, admins, appState, sendMessage) => {
-        const { threadID } = event;
+        const { threadID, senderID, attachments } = event;
         try {
             const question = args.slice(1).join(' '); // Combine remaining args for the question
+            let imageUrl = '';
 
-            if (!question) {
-                sendMessage(api, { threadID, message: 'Please provide a question to ask Gemini.' });
-                return;
+            // Check for image attachments
+            if (attachments && attachments.length > 0) {
+                imageUrl = attachments[0].url;
             }
 
             // Construct the API request
-            const apiUrl = 'https://ajiro.gleeze.com/api/ai'; // Use the API URL as provided
+            const apiUrl = 'https://kaiz-apis.gleeze.com/api/gpt-4o-pro';
             const requestBody = {
-                "model": "gemini-1.5-pro-exp-0827", // Replace with your actual API URL
-                "system": "You are a LLM called Gemini  invented by Aljur Pogoy",
-                "question": encodeURIComponent(question)
+                "q": question,
+                "uid": 1, // Replace with the appropriate UID for your API
+                "imageUrl": imageUrl
             };
 
             // Make the API call
@@ -28,13 +29,13 @@ module.exports = {
 
             // Process the response (you'll need to adapt this to your API's format)
             if (response.status === 200) {
-                const answer = response.data.answer; // Assuming your API returns an 'answer' field
+                const answer = response.data[0].content.url_content.response; // Assuming your API returns an 'answer' field
 
                 // Send the response back to the user
-                sendMessage(api, { threadID, message: `Gemini says: ${answer}` });
+                sendMessage(api, { threadID, message: `GPT-4 Pro says: ${answer}` });
             } else {
                 // Handle API errors 
-                sendMessage(api, { threadID, message: `Gemini encountered an error. Please try again later.` });
+                sendMessage(api, { threadID, message: `GPT-4 Pro encountered an error. Please try again later.` });
             }
 
         } catch (error) {
@@ -43,4 +44,4 @@ module.exports = {
         }
     },
 };
-                                  
+                              
