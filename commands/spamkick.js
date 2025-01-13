@@ -29,7 +29,7 @@ module.exports = {
 
                 // Send video
                 await api.sendMessage({
-                    body: `The bot's prefix is: \`${prefix}\``, 
+                    body: `🌐 Global System Prefix: \`${prefix}\``, 
                     attachment: fs.createReadStream(videoPath) 
                 }, threadID);
             } catch (error) {
