@@ -5,6 +5,10 @@ The Seven Shadows are Cid Kagenou's elite shadow organization.  Each member poss
 
 | Member Name | Image             | Description                                                                        |
 |--------------|----------------------|------------------------------------------------------------------------------------|
+| Cid Kagenou (King)        | ![Shadow](images/Shadow.jpg) | [Description - already provided above]                                            |
+
+| Member Name | Image             | Description                                                                        |
+|--------------|----------------------|------------------------------------------------------------------------------------|
 | Alpha (Leader)       | ![Alpha](image/Alpha.jpg) | [Alpha is the strongest of the Seven Shadow Garden, a powerful magic swordsman. He's a loyal and determined individual, always putting the well-being of his comrades first. However, his true strength is hidden beneath a seemingly playful and carefree exterior.]                                            |
 | Beta         | ![Beta](image/Beta.jpg)  | [Beta is the brains of the group, a skilled strategist and an expert in magic. She's known for her calm and collected demeanor, but she can also be incredibly ruthless when necessary.] |
 | Gamma        | ![Gamma](image/Gamma.jpg) | [Gamma is a master of martial arts, wielding her fists with incredible speed and power. She's fiercely independent and often acts as the voice of reason within the Seven Shadow Garden.]|
