@@ -5,7 +5,7 @@ The Seven Shadows are Cid Kagenou's elite shadow organization.  Each member poss
 
 | King of Shadow garden | Image             | Description                                                                        |
 |--------------|----------------------|------------------------------------------------------------------------------------|
-| Cid Kagenou (King)        | ![Shadow](image/Shadow.jpg) | [Description - already provided above]                                            |
+| Cid Kagenou (King)        | ![Shadow](image/Shadow.jpg) | Cid Kagenou a.k.a shadow is the king of shadow garden and the seven shadows, and his loyal comrades Alpha is the strongest leader in Seven shadows.                                   |
 
 | Member Name | Image             | Description                                                                        |
 |--------------|----------------------|------------------------------------------------------------------------------------|
