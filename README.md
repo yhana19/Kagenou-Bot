@@ -58,7 +58,16 @@ module.exports = {
 if (commandName === 'prefix' && commands.has('prefix')) {
         const command = commands.get('prefix');
 ```
+## Put your uid in config.json
 ```node.js
+{
+  "admins": ["100073129302064","100080383844941","61560407754490"]
+}
+```
+## Put your appstate on appstate.json file (recommend not to use your main account)
+```node.js
+{}
+```
 
 ## To Run the Kagenou Bot 
  ```
@@ -68,3 +77,6 @@ npm start or npm install
 ```
 node index.js
 ```
+## How to deploy Kagenou bot in Render?
+
+> You need to login <herf> render.com
