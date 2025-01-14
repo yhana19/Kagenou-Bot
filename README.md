@@ -53,6 +53,13 @@ module.exports = {
   },
 };
 ```
+## To handle the non-prefix comamnd
+```node.js
+if (commandName === 'prefix' && commands.has('prefix')) {
+        const command = commands.get('prefix');
+```
+```node.js
+
 ## To Run the Kagenou Bot 
  ```
 npm start or npm install
