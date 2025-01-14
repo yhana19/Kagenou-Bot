@@ -69,7 +69,7 @@ if (commandName === 'prefix' && commands.has('prefix')) {
 {}
 ```
 
-## To Run the Kagenou Bot 
+## To Run the Kagenou Bot, login first in [Render](render.com)
  ```
 npm start or npm install
 ```
@@ -77,6 +77,6 @@ npm start or npm install
 ```
 node index.js
 ```
-## How to deploy Kagenou bot in Render?
 
-> You need to login <herf> render.com
+# Credits to ws3-fca 
+ws3-fca [Click Here](https://www.npmjs.com/package/ws3-fca)
