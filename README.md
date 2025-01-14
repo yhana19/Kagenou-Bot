@@ -3,9 +3,9 @@
 
 The Seven Shadows are Cid Kagenou's elite shadow organization.  Each member possesses unique skills and plays a crucial role in Cid's plans.
 
-| Member Name | Image             | Description                                                                        |
+| King of Shadow garden | Image             | Description                                                                        |
 |--------------|----------------------|------------------------------------------------------------------------------------|
-| Cid Kagenou (King)        | ![Shadow](images/Shadow.jpg) | [Description - already provided above]                                            |
+| Cid Kagenou (King)        | ![Shadow](image/Shadow.jpg) | [Description - already provided above]                                            |
 
 | Member Name | Image             | Description                                                                        |
 |--------------|----------------------|------------------------------------------------------------------------------------|
