@@ -53,6 +53,16 @@ module.exports = {
   },
 };
 ```
+## You can make an comamnd like this
+```node.js
+module.exports = {
+  name: 'uptime',
+  description: 'Shows the uptime of the bot.',
+  author: 'Aljur Pogoy',
+  usage: '/uptime',
+  async execute(api, event, args, commands, prefix, admins, appState, sendMessage) {
+    const { threadID } = event;
+```
 ## To handle the non-prefix comamnd
 ```node.js
 if (commandName === 'prefix' && commands.has('prefix')) {
