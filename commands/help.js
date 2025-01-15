@@ -17,7 +17,7 @@ module.exports = {
     try {
       await sendMessage(api, { threadID, message: menuMessage }); // Send text first
 
-      const imageUrl = "https://imgur.com/a/xQI1cXg"; // REPLACE with your Imgur image URL
+      const imageUrl = "https://imgur.com"; // replace mo lang if gusto, mo may attachment image
 
       const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data, 'binary');
