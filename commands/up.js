@@ -13,7 +13,7 @@ module.exports = {
     const uptimeHours = Math.floor(uptimeMinutes / 60);
     const uptimeDays = Math.floor(uptimeHours / 24);
 
-    const uptimeMessage = `Cid Kagenou Bot uptime: ${uptimeDays} days, ${uptimeHours % 24} hours, ${uptimeMinutes % 60} minutes, ${Math.floor(uptimeSeconds % 60)} seconds.`;
+    const uptimeMessage = `bioscope bot uptime: ${uptimeDays} days, ${uptimeHours % 24} hours, ${uptimeMinutes % 60} minutes, ${Math.floor(uptimeSeconds % 60)} seconds.`;
 
     sendMessage(api, { threadID, message: uptimeMessage });
   },
